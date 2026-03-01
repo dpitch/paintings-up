@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Paintings Up — Lighting Correction</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <h1>Paintings Up</h1>
+  <p class="subtitle">Fix uneven lighting on framed artwork photos</p>
+
+  <div id="drop-zone">
+    <div class="icon">&#x1F5BC;</div>
+    <p>Drop a painting photo here, or click to browse</p>
+  </div>
+  <input type="file" id="file-input" accept="image/*">
+
+  <div id="controls">
+    <div class="control-bar">
+      <div class="control-group">
+        <label for="intensity">Intensity</label>
+        <input type="range" id="intensity" min="0" max="100" value="100">
+        <span id="intensity-value">100%</span>
+      </div>
+
+      <label class="toggle-label">
+        <input type="checkbox" id="lightmap-toggle">
+        Show lightmap
+      </label>
+
+      <div class="control-group" style="margin-left:auto">
+        <button class="primary" onclick="downloadCorrectedImage()">Download corrected</button>
+        <button onclick="downloadLightmap(false)">Lightmap (gray)</button>
+        <button onclick="downloadLightmap(true)">Lightmap (color)</button>
+      </div>
+    </div>
+  </div>
+
+  <div id="workspace">
+    <div id="comparison">
+      <div id="before-clip"></div>
+      <div id="after-clip"></div>
+      <div id="comparison-slider"></div>
+      <div class="slider-labels">
+        <span>Before</span>
+        <span>After</span>
+      </div>
+    </div>
+
+    <div id="technique-panel"></div>
+  </div>
+
+  <p id="status"></p>
+
+  <script src="correction.js"></script>
+  <script src="lightmap.js"></script>
+  <script src="export.js"></script>
+  <script src="app.js"></script>
+</body>
+</html>

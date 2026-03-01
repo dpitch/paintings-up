@@ -1,0 +1,288 @@
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+body {
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  background: #fafafa;
+  color: #1a1a1a;
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 2rem 1rem;
+}
+
+h1 {
+  font-size: 1.5rem;
+  font-weight: 600;
+  margin-bottom: 0.25rem;
+}
+
+.subtitle {
+  color: #666;
+  font-size: 0.875rem;
+  margin-bottom: 2rem;
+}
+
+/* Drop zone */
+#drop-zone {
+  width: 100%;
+  max-width: 640px;
+  border: 2px dashed #ccc;
+  border-radius: 12px;
+  padding: 4rem 2rem;
+  text-align: center;
+  cursor: pointer;
+  transition: border-color 0.15s, background 0.15s;
+  color: #888;
+}
+
+#drop-zone:hover,
+#drop-zone.dragover {
+  border-color: #333;
+  background: #f0f0f0;
+  color: #333;
+}
+
+#drop-zone .icon {
+  font-size: 2.5rem;
+  margin-bottom: 0.75rem;
+}
+
+#drop-zone p {
+  font-size: 0.95rem;
+}
+
+#file-input {
+  display: none;
+}
+
+/* Controls */
+#controls {
+  display: none;
+  width: 100%;
+  max-width: 1200px;
+  margin-bottom: 1rem;
+}
+
+.control-bar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 1rem;
+  padding: 0.75rem 1rem;
+  background: #fff;
+  border: 1px solid #e0e0e0;
+  border-radius: 8px;
+}
+
+.control-group {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-size: 0.85rem;
+}
+
+.control-group label {
+  color: #555;
+  white-space: nowrap;
+}
+
+#intensity {
+  width: 120px;
+  accent-color: #333;
+}
+
+#intensity-value {
+  font-variant-numeric: tabular-nums;
+  min-width: 3ch;
+}
+
+.control-group button {
+  padding: 0.4rem 0.75rem;
+  border: 1px solid #d0d0d0;
+  border-radius: 6px;
+  background: #fff;
+  cursor: pointer;
+  font-size: 0.8rem;
+  transition: background 0.1s;
+}
+
+.control-group button:hover {
+  background: #f0f0f0;
+}
+
+.control-group button.primary {
+  background: #1a1a1a;
+  color: #fff;
+  border-color: #1a1a1a;
+}
+
+.control-group button.primary:hover {
+  background: #333;
+}
+
+/* Toggle */
+.toggle-label {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  cursor: pointer;
+  font-size: 0.85rem;
+  color: #555;
+}
+
+.toggle-label input {
+  accent-color: #333;
+}
+
+/* Workspace: two-column layout */
+#workspace {
+  display: none;
+  width: 100%;
+  max-width: 1200px;
+  gap: 1rem;
+}
+
+#workspace.active {
+  display: flex;
+}
+
+/* Comparison viewer */
+#comparison {
+  position: relative;
+  flex: 1;
+  min-width: 0;
+  background: #e8e8e8;
+  border-radius: 8px;
+  overflow: hidden;
+  cursor: ew-resize;
+  user-select: none;
+  -webkit-user-select: none;
+}
+
+#before-clip,
+#after-clip {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+}
+
+#before-clip canvas,
+#after-clip canvas {
+  width: 100%;
+  height: 100%;
+  display: block;
+  object-fit: contain;
+}
+
+#after-clip {
+  clip-path: inset(0 50% 0 0);
+}
+
+#comparison-slider {
+  position: absolute;
+  top: 0;
+  left: 50%;
+  width: 2px;
+  height: 100%;
+  background: #fff;
+  box-shadow: 0 0 4px rgba(0,0,0,0.3);
+  z-index: 10;
+  pointer-events: none;
+}
+
+#comparison-slider::after {
+  content: '';
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  background: #fff;
+  box-shadow: 0 1px 4px rgba(0,0,0,0.25);
+}
+
+.slider-labels {
+  position: absolute;
+  top: 0.5rem;
+  left: 0;
+  right: 0;
+  display: flex;
+  justify-content: space-between;
+  padding: 0 0.75rem;
+  pointer-events: none;
+  z-index: 5;
+}
+
+.slider-labels span {
+  background: rgba(0,0,0,0.5);
+  color: #fff;
+  font-size: 0.7rem;
+  padding: 0.2rem 0.5rem;
+  border-radius: 4px;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+/* Technique panel */
+#technique-panel {
+  width: 260px;
+  flex-shrink: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.375rem;
+  max-height: 80vh;
+  overflow-y: auto;
+}
+
+.technique-card {
+  padding: 0.65rem 0.75rem;
+  border: 1px solid #e0e0e0;
+  border-radius: 8px;
+  background: #fff;
+  cursor: pointer;
+  transition: border-color 0.12s, background 0.12s;
+}
+
+.technique-card:hover {
+  border-color: #bbb;
+  background: #f8f8f8;
+}
+
+.technique-card.active {
+  border-color: #1a1a1a;
+  background: #1a1a1a;
+  color: #fff;
+}
+
+.technique-card .tc-name {
+  font-size: 0.85rem;
+  font-weight: 600;
+  margin-bottom: 0.15rem;
+}
+
+.technique-card .tc-desc {
+  font-size: 0.75rem;
+  color: #888;
+  line-height: 1.3;
+}
+
+.technique-card.active .tc-desc {
+  color: rgba(255,255,255,0.65);
+}
+
+/* Status */
+#status {
+  margin-top: 1rem;
+  font-size: 0.85rem;
+  color: #888;
+  min-height: 1.2em;
+}
