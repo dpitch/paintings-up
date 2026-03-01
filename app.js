@@ -122,6 +122,35 @@ document.addEventListener('DOMContentLoaded', () => {
     if (file && file.type.startsWith('image/')) loadImage(file);
   });
 
+  // ── Global drag & drop (anywhere on the page) ────────────
+  let globalDragCounter = 0;
+  document.body.addEventListener('dragover', (e) => {
+    e.preventDefault();
+  });
+  document.body.addEventListener('dragenter', (e) => {
+    e.preventDefault();
+    globalDragCounter++;
+    if (dropZone.style.display !== 'none') {
+      document.body.classList.add('dragover-global');
+    }
+  });
+  document.body.addEventListener('dragleave', () => {
+    globalDragCounter--;
+    if (globalDragCounter <= 0) {
+      globalDragCounter = 0;
+      document.body.classList.remove('dragover-global');
+    }
+  });
+  document.body.addEventListener('drop', (e) => {
+    e.preventDefault();
+    globalDragCounter = 0;
+    document.body.classList.remove('dragover-global');
+    if (dropZone.style.display !== 'none') {
+      const file = e.dataTransfer.files[0];
+      if (file && file.type.startsWith('image/')) loadImage(file);
+    }
+  });
+
   fileInput.addEventListener('change', (e) => {
     const file = e.target.files[0];
     if (file) loadImage(file);

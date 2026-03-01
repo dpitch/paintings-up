@@ -122,26 +122,37 @@ h1 {
 /* Drop zone */
 #drop-zone {
   width: 100%;
-  max-width: 640px;
+  max-width: 1200px;
   border: 2px dashed var(--border);
   border-radius: 12px;
-  padding: 4rem 2rem;
+  padding: 6rem 2rem;
   text-align: center;
   cursor: pointer;
   transition: border-color 0.15s, background 0.15s;
   color: var(--fg-faint);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
 }
 
 #drop-zone:hover,
-#drop-zone.dragover {
+#drop-zone.dragover,
+body.dragover-global #drop-zone {
   border-color: var(--accent);
   background: var(--drop-hover-bg);
   color: var(--fg);
 }
 
 #drop-zone .icon {
-  font-size: 2.5rem;
-  margin-bottom: 0.75rem;
+  margin-bottom: 1rem;
+  opacity: 0.5;
+}
+
+#drop-zone:hover .icon,
+#drop-zone.dragover .icon,
+body.dragover-global #drop-zone .icon {
+  opacity: 0.8;
 }
 
 #drop-zone p {
