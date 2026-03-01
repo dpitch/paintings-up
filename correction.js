@@ -143,6 +143,22 @@ function applyHighlightGuard(outData, srcData, pixelCount) {
   }
 }
 
+// Brightness lift — a gamma curve that raises midtones/shadows without blowing highlights.
+// amount: 0 = no change, 1 = maximum lift
+function applyBrightnessLift(outData, pixelCount, amount) {
+  if (amount <= 0) return;
+  const dst = outData.data;
+  // Map amount 0–1 to gamma 1.0–0.45 (lower gamma = brighter)
+  const gamma = 1 - amount * 0.55;
+  for (let i = 0; i < pixelCount; i++) {
+    const idx = i * 4;
+    for (let c = 0; c < 3; c++) {
+      const v = dst[idx + c] / 255;
+      dst[idx + c] = Math.round(Math.pow(v, gamma) * 255);
+    }
+  }
+}
+
 // ═══════════════════════════════════════════════════════════════
 // Per-mode correction functions
 // ═══════════════════════════════════════════════════════════════
@@ -252,10 +268,11 @@ function applyCorrection(srcData, lightmapL, lightmapA, lightmapB, intensity, mo
   const fn = MODE_FUNCTIONS[mode || 'lab-divide'];
   fn(srcData.data, out.data, lightmapL, lightmapA, lightmapB, intensity, pixelCount);
 
-  // Post-process highlight protection (order matters: guard first, then shoulder)
+  // Post-process highlight protection (order matters: guard first, then shoulder, then lift)
   if (highlights) {
     if (highlights.highlightGuard) applyHighlightGuard(out, srcData, pixelCount);
     if (highlights.softShoulder)   applySoftShoulder(out, pixelCount);
+    if (highlights.brightnessLift)  applyBrightnessLift(out, pixelCount, highlights.brightnessLift);
   }
 
   return out;

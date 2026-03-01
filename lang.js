@@ -31,6 +31,11 @@ const I18N = {
     'hl.soft-shoulder.desc': 'Courbe filmique — comprime les hautes lumières au lieu de les écrêter',
     'hl.highlight-guard': 'Protection clairs',
     'hl.highlight-guard.desc': 'Réduit la correction sur les pixels lumineux pour préserver le détail',
+    brightnessLift: 'Luminosité',
+    lightmapMethod: 'Lightmap',
+    methodBilinear: 'Bilinéaire',
+    methodPoly2: 'Poly degré 2',
+    methodPoly3: 'Poly degré 3',
   },
   en: {
     title: 'Paintings Up',
@@ -62,6 +67,11 @@ const I18N = {
     'hl.soft-shoulder.desc': 'Filmic rolloff — compresses highlights instead of clipping',
     'hl.highlight-guard': 'Highlight Guard',
     'hl.highlight-guard.desc': 'Eases off correction on bright pixels to preserve detail',
+    brightnessLift: 'Brightness',
+    lightmapMethod: 'Lightmap',
+    methodBilinear: 'Bilinear',
+    methodPoly2: 'Poly degree 2',
+    methodPoly3: 'Poly degree 3',
   },
 };
 

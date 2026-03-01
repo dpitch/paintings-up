@@ -77,6 +77,25 @@ document.addEventListener('DOMContentLoaded', () => {
       });
       techniquePanel.appendChild(toggle);
     });
+
+    // Brightness lift slider
+    const liftWrap = document.createElement('div');
+    liftWrap.className = 'panel-slider';
+    liftWrap.innerHTML =
+      `<label class="panel-slider-label"><span data-i18n="brightnessLift">${t('brightnessLift')}</span>` +
+      `<span class="panel-slider-value">0%</span></label>` +
+      `<input type="range" min="0" max="100" value="${Math.round(highlightFlags.brightnessLift * 100) || 0}">`;
+    const liftRange = liftWrap.querySelector('input');
+    const liftValue = liftWrap.querySelector('.panel-slider-value');
+    liftRange.addEventListener('input', () => {
+      const v = liftRange.value / 100;
+      liftValue.textContent = liftRange.value + '%';
+      highlightFlags.brightnessLift = v;
+      if (window.appState) {
+        applyAndRender(intensityInput.value / 100);
+      }
+    });
+    techniquePanel.appendChild(liftWrap);
   }
 
   buildPanel();

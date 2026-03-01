@@ -229,6 +229,41 @@ h1 {
   background: var(--btn-primary-hover);
 }
 
+/* Lightmap method switcher */
+.method-switch {
+  display: flex;
+  gap: 0;
+  border: 1px solid var(--btn-border);
+  border-radius: 6px;
+  overflow: hidden;
+}
+
+.method-btn {
+  padding: 0.35rem 0.6rem;
+  border: none;
+  border-right: 1px solid var(--btn-border);
+  background: var(--btn-bg);
+  color: var(--fg-faint);
+  cursor: pointer;
+  font-size: 0.75rem;
+  font-weight: 500;
+  transition: background 0.12s, color 0.12s;
+}
+
+.method-btn:last-child {
+  border-right: none;
+}
+
+.method-btn:hover {
+  background: var(--btn-hover);
+  color: var(--fg);
+}
+
+.method-btn.active {
+  background: var(--btn-primary-bg);
+  color: var(--btn-primary-fg);
+}
+
 /* Toggle */
 .toggle-label {
   display: flex;
@@ -438,6 +473,35 @@ body.dark .highlight-toggle.on .tc-switch-thumb {
 
 .highlight-toggle.on .tc-switch-thumb {
   transform: translateX(14px);
+}
+
+/* Panel slider (brightness lift etc.) */
+.panel-slider {
+  padding: 0.5rem 0.75rem;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  background: var(--surface);
+  transition: background 0.25s, border-color 0.25s;
+}
+
+.panel-slider-label {
+  display: flex;
+  justify-content: space-between;
+  font-size: 0.8rem;
+  font-weight: 600;
+  color: var(--fg);
+  margin-bottom: 0.35rem;
+}
+
+.panel-slider-value {
+  font-weight: 400;
+  color: var(--fg-faint);
+  font-variant-numeric: tabular-nums;
+}
+
+.panel-slider input[type="range"] {
+  width: 100%;
+  accent-color: var(--accent);
 }
 
 /* Status */
