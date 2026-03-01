@@ -16,26 +16,73 @@ document.addEventListener('DOMContentLoaded', () => {
   const status = document.getElementById('status');
 
   let currentMode = 'lab-divide';
+  let highlightFlags = { softShoulder: false, highlightGuard: false };
 
-  // ── Build technique cards ──────────────────────────────────
-  CORRECTION_MODES.forEach((mode) => {
-    const card = document.createElement('div');
-    card.className = 'technique-card' + (mode.id === currentMode ? ' active' : '');
-    card.dataset.mode = mode.id;
-    card.innerHTML =
-      `<div class="tc-name">${mode.name}</div>` +
-      `<div class="tc-desc">${mode.desc}</div>`;
-    card.addEventListener('click', () => {
-      currentMode = mode.id;
-      techniquePanel.querySelectorAll('.technique-card').forEach(c => c.classList.remove('active'));
-      card.classList.add('active');
-      if (window.appState) {
-        const intensity = intensityInput.value / 100;
-        applyAndRender(intensity);
-      }
-    });
-    techniquePanel.appendChild(card);
+  // ── Background slider ──────────────────────────────────────
+  const bgSlider = document.getElementById('bg-slider');
+  bgSlider.addEventListener('input', () => {
+    const v = bgSlider.value / 100;
+    const c = Math.round(255 * (1 - v));
+    document.body.style.setProperty('--bg', `rgb(${c},${c},${c})`);
+    document.body.classList.toggle('dark', v > 0.45);
   });
+
+  // ── Build / rebuild technique panel ────────────────────────
+  function buildPanel() {
+    techniquePanel.innerHTML = '';
+
+    // Mode cards
+    CORRECTION_MODES.forEach((mode) => {
+      const card = document.createElement('div');
+      card.className = 'technique-card' + (mode.id === currentMode ? ' active' : '');
+      card.dataset.mode = mode.id;
+      card.innerHTML =
+        `<div class="tc-name">${t('mode.' + mode.id)}</div>` +
+        `<div class="tc-desc">${t('mode.' + mode.id + '.desc')}</div>`;
+      card.addEventListener('click', () => {
+        currentMode = mode.id;
+        techniquePanel.querySelectorAll('.technique-card:not(.highlight-toggle)').forEach(c => c.classList.remove('active'));
+        card.classList.add('active');
+        if (window.appState) {
+          applyAndRender(intensityInput.value / 100);
+        }
+      });
+      techniquePanel.appendChild(card);
+    });
+
+    // Separator
+    const sep = document.createElement('div');
+    sep.className = 'panel-separator';
+    sep.textContent = t('highlightSection');
+    techniquePanel.appendChild(sep);
+
+    // Highlight toggles
+    HIGHLIGHT_OPTIONS.forEach((opt) => {
+      const key = opt.id === 'soft-shoulder' ? 'softShoulder' : 'highlightGuard';
+      const toggle = document.createElement('div');
+      toggle.className = 'technique-card highlight-toggle' + (highlightFlags[key] ? ' on' : '');
+      toggle.dataset.option = opt.id;
+      toggle.innerHTML =
+        `<div class="tc-row">` +
+          `<div class="tc-name">${t('hl.' + opt.id)}</div>` +
+          `<div class="tc-switch"><div class="tc-switch-thumb"></div></div>` +
+        `</div>` +
+        `<div class="tc-desc">${t('hl.' + opt.id + '.desc')}</div>`;
+      toggle.addEventListener('click', () => {
+        highlightFlags[key] = !highlightFlags[key];
+        toggle.classList.toggle('on', highlightFlags[key]);
+        if (window.appState) {
+          applyAndRender(intensityInput.value / 100);
+        }
+      });
+      techniquePanel.appendChild(toggle);
+    });
+  }
+
+  buildPanel();
+
+  // Rebuild panel text on language change
+  window.addEventListener('langchange', buildPanel);
 
   // ── Drop zone ──────────────────────────────────────────────
   dropZone.addEventListener('click', () => fileInput.click());
@@ -105,7 +152,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
   // ── Load image ─────────────────────────────────────────────
   function loadImage(file) {
-    status.textContent = 'Loading image...';
+    status.textContent = t('loading');
     const img = new Image();
     img.onload = () => {
       const canvas = document.createElement('canvas');
@@ -115,7 +162,7 @@ document.addEventListener('DOMContentLoaded', () => {
       ctx.drawImage(img, 0, 0);
       const imageData = ctx.getImageData(0, 0, img.width, img.height);
 
-      status.textContent = 'Sampling borders...';
+      status.textContent = t('sampling');
       requestAnimationFrame(() => {
         processImage(imageData, img.width, img.height);
       });
@@ -124,7 +171,7 @@ document.addEventListener('DOMContentLoaded', () => {
   }
 
   function processImage(imageData, w, h) {
-    status.textContent = 'Building lightmap...';
+    status.textContent = t('buildingLightmap');
 
     setTimeout(() => {
       const points = sampleBorders(imageData);
@@ -153,7 +200,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const state = window.appState;
     if (!state) return;
 
-    status.textContent = 'Applying correction...';
+    status.textContent = t('applying');
 
     setTimeout(() => {
       const corrected = applyCorrection(
@@ -162,7 +209,8 @@ document.addEventListener('DOMContentLoaded', () => {
         state.lightmap.a,
         state.lightmap.b,
         intensity,
-        currentMode
+        currentMode,
+        highlightFlags
       );
       state.correctedData = corrected;
       renderComparison();

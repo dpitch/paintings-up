@@ -1,38 +1,51 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="fr">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Paintings Up — Lighting Correction</title>
+  <title>Paintings Up</title>
   <link rel="stylesheet" href="style.css">
 </head>
 <body>
-  <h1>Paintings Up</h1>
-  <p class="subtitle">Fix uneven lighting on framed artwork photos</p>
+  <div id="header">
+    <div>
+      <h1>Paintings Up</h1>
+      <p class="subtitle" data-i18n="subtitle">Corriger l'éclairage inégal sur les photos de tableaux</p>
+    </div>
+    <div class="lang-switcher">
+      <button class="lang-btn active" data-lang="fr" onclick="setLang('fr')">FR</button>
+      <button class="lang-btn" data-lang="en" onclick="setLang('en')">EN</button>
+    </div>
+  </div>
 
   <div id="drop-zone">
     <div class="icon">&#x1F5BC;</div>
-    <p>Drop a painting photo here, or click to browse</p>
+    <p data-i18n="dropText">Déposez une photo ici, ou cliquez pour parcourir</p>
   </div>
   <input type="file" id="file-input" accept="image/*">
 
   <div id="controls">
     <div class="control-bar">
       <div class="control-group">
-        <label for="intensity">Intensity</label>
-        <input type="range" id="intensity" min="0" max="100" value="100">
-        <span id="intensity-value">100%</span>
+        <label for="intensity" data-i18n="intensity">Intensité</label>
+        <input type="range" id="intensity" min="0" max="100" value="85">
+        <span id="intensity-value">85%</span>
       </div>
 
       <label class="toggle-label">
         <input type="checkbox" id="lightmap-toggle">
-        Show lightmap
+        <span data-i18n="showLightmap">Voir la lightmap</span>
       </label>
 
+      <div class="control-group bg-control">
+        <label for="bg-slider">BG</label>
+        <input type="range" id="bg-slider" min="0" max="100" value="8">
+      </div>
+
       <div class="control-group" style="margin-left:auto">
-        <button class="primary" onclick="downloadCorrectedImage()">Download corrected</button>
-        <button onclick="downloadLightmap(false)">Lightmap (gray)</button>
-        <button onclick="downloadLightmap(true)">Lightmap (color)</button>
+        <button class="primary" onclick="downloadCorrectedImage()" data-i18n="download">Télécharger corrigé</button>
+        <button onclick="downloadLightmap(false)" data-i18n="lightmapGray">Lightmap (gris)</button>
+        <button onclick="downloadLightmap(true)" data-i18n="lightmapColor">Lightmap (couleur)</button>
       </div>
     </div>
   </div>
@@ -43,8 +56,8 @@
       <div id="after-clip"></div>
       <div id="comparison-slider"></div>
       <div class="slider-labels">
-        <span>Before</span>
-        <span>After</span>
+        <span data-i18n="before">Avant</span>
+        <span data-i18n="after">Après</span>
       </div>
     </div>
 
@@ -53,6 +66,7 @@
 
   <p id="status"></p>
 
+  <script src="lang.js"></script>
   <script src="correction.js"></script>
   <script src="lightmap.js"></script>
   <script src="export.js"></script>

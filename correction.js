@@ -7,12 +7,17 @@
 const CORRECTION_MODES = [
   { id: 'lab-divide',  name: 'LAB Divide',    desc: 'Perceptual luminosity correction in LAB space' },
   { id: 'rgb-divide',  name: 'RGB Divide',    desc: 'Direct per-channel divide — fast, neutral' },
-  { id: 'screen',      name: 'Screen',        desc: 'Inverted lightmap as Screen blend' },
-  { id: 'soft-light',  name: 'Soft Light',    desc: 'Subtle correction, preserves contrast' },
-  { id: 'overlay',     name: 'Overlay',       desc: 'Stronger correction, boosts contrast' },
-  { id: 'gamma',       name: 'Gamma',         desc: 'Per-pixel gamma remap for smooth lift' },
   { id: 'additive',    name: 'Linear Light',  desc: 'Simple additive offset' },
   { id: 'levels',      name: 'Levels',        desc: 'Remap white point per channel' },
+];
+
+// ═══════════════════════════════════════════════════════════════
+// Highlight protection options
+// ═══════════════════════════════════════════════════════════════
+
+const HIGHLIGHT_OPTIONS = [
+  { id: 'soft-shoulder', name: 'Soft Shoulder',       desc: 'Filmic rolloff — compresses highlights instead of clipping' },
+  { id: 'highlight-guard', name: 'Highlight Guard',   desc: 'Eases off correction on bright pixels to preserve detail' },
 ];
 
 // ═══════════════════════════════════════════════════════════════
@@ -92,6 +97,53 @@ function labToRgb(L, a, b) {
 }
 
 // ═══════════════════════════════════════════════════════════════
+// Highlight protection post-processing
+// ═══════════════════════════════════════════════════════════════
+
+// Option 1: Soft Shoulder — filmic tone-map that compresses values > threshold
+// instead of hard clipping. Preserves relative differences in highlights.
+function applySoftShoulder(outData, pixelCount) {
+  const dst = outData.data;
+  const knee = 0.82;  // start compressing here
+  const maxOut = 1.0;
+  for (let i = 0; i < pixelCount; i++) {
+    const idx = i * 4;
+    for (let c = 0; c < 3; c++) {
+      let v = dst[idx + c] / 255;
+      if (v > knee) {
+        // Smooth compression: maps [knee, inf) → [knee, maxOut) asymptotically
+        const excess = v - knee;
+        const range = maxOut - knee;
+        v = knee + range * (1 - Math.exp(-excess / range));
+      }
+      dst[idx + c] = Math.round(Math.max(0, Math.min(255, v * 255)));
+    }
+  }
+}
+
+// Option 2: Highlight Guard — reduce correction strength on already-bright pixels.
+// Applied during correction: blends corrected toward original proportional to brightness.
+function applyHighlightGuard(outData, srcData, pixelCount) {
+  const dst = outData.data;
+  const src = srcData.data;
+  const onset = 0.55;   // start protecting above this brightness (0–1)
+  for (let i = 0; i < pixelCount; i++) {
+    const idx = i * 4;
+    // Original pixel luminance (fast approx)
+    const lum = (src[idx] * 0.299 + src[idx + 1] * 0.587 + src[idx + 2] * 0.114) / 255;
+    if (lum > onset) {
+      // t ramps 0→1 as lum goes onset→1
+      const t = Math.min(1, (lum - onset) / (1 - onset));
+      // Smooth ease-in curve
+      const blend = t * t;
+      for (let c = 0; c < 3; c++) {
+        dst[idx + c] = Math.round(dst[idx + c] + (src[idx + c] - dst[idx + c]) * blend);
+      }
+    }
+  }
+}
+
+// ═══════════════════════════════════════════════════════════════
 // Per-mode correction functions
 // ═══════════════════════════════════════════════════════════════
 
@@ -117,109 +169,17 @@ function correctLabDivide(src, dst, lightmapL, lightmapA, lightmapB, intensity, 
 }
 
 function correctRgbDivide(src, dst, lightmapL, _la, _lb, intensity, pixelCount) {
-  // Build per-pixel RGB lightmap from LAB lightmap
   for (let i = 0; i < pixelCount; i++) {
     const idx = i * 4;
     const r = src[idx] / 255, g = src[idx + 1] / 255, b = src[idx + 2] / 255;
     const a = src[idx + 3];
 
-    // Lightmap as normalized RGB (from LAB)
     const lmRgb = labToRgb(lightmapL[i], _la[i], _lb[i]);
     const lmR = lmRgb.r / 255, lmG = lmRgb.g / 255, lmB = lmRgb.b / 255;
 
     const cR = lmR > 0.001 ? r / lmR : r;
     const cG = lmG > 0.001 ? g / lmG : g;
     const cB = lmB > 0.001 ? b / lmB : b;
-
-    dst[idx]     = Math.round(Math.min(255, Math.max(0, (r + (cR - r) * intensity) * 255)));
-    dst[idx + 1] = Math.round(Math.min(255, Math.max(0, (g + (cG - g) * intensity) * 255)));
-    dst[idx + 2] = Math.round(Math.min(255, Math.max(0, (b + (cB - b) * intensity) * 255)));
-    dst[idx + 3] = a;
-  }
-}
-
-function correctScreen(src, dst, lightmapL, _la, _lb, intensity, pixelCount) {
-  for (let i = 0; i < pixelCount; i++) {
-    const idx = i * 4;
-    const r = src[idx] / 255, g = src[idx + 1] / 255, b = src[idx + 2] / 255;
-    const a = src[idx + 3];
-
-    // Lightmap normalized, inverted
-    const lm = Math.max(0.001, lightmapL[i] / 100);
-    // Screen: 1 - (1 - px) * lm
-    const cR = 1 - (1 - r) * lm;
-    const cG = 1 - (1 - g) * lm;
-    const cB = 1 - (1 - b) * lm;
-
-    dst[idx]     = Math.round(Math.min(255, Math.max(0, (r + (cR - r) * intensity) * 255)));
-    dst[idx + 1] = Math.round(Math.min(255, Math.max(0, (g + (cG - g) * intensity) * 255)));
-    dst[idx + 2] = Math.round(Math.min(255, Math.max(0, (b + (cB - b) * intensity) * 255)));
-    dst[idx + 3] = a;
-  }
-}
-
-function _softLight(base, blend) {
-  if (blend <= 0.5) {
-    return base - (1 - 2 * blend) * base * (1 - base);
-  }
-  return base + (2 * blend - 1) * (Math.sqrt(base) - base);
-}
-
-function correctSoftLight(src, dst, lightmapL, _la, _lb, intensity, pixelCount) {
-  for (let i = 0; i < pixelCount; i++) {
-    const idx = i * 4;
-    const r = src[idx] / 255, g = src[idx + 1] / 255, b = src[idx + 2] / 255;
-    const a = src[idx + 3];
-
-    // Invert lightmap as blend layer
-    const blend = 1 - Math.max(0, Math.min(1, lightmapL[i] / 100));
-    const cR = _softLight(r, blend);
-    const cG = _softLight(g, blend);
-    const cB = _softLight(b, blend);
-
-    dst[idx]     = Math.round(Math.min(255, Math.max(0, (r + (cR - r) * intensity) * 255)));
-    dst[idx + 1] = Math.round(Math.min(255, Math.max(0, (g + (cG - g) * intensity) * 255)));
-    dst[idx + 2] = Math.round(Math.min(255, Math.max(0, (b + (cB - b) * intensity) * 255)));
-    dst[idx + 3] = a;
-  }
-}
-
-function _overlay(base, blend) {
-  return base < 0.5
-    ? 2 * base * blend
-    : 1 - 2 * (1 - base) * (1 - blend);
-}
-
-function correctOverlay(src, dst, lightmapL, _la, _lb, intensity, pixelCount) {
-  for (let i = 0; i < pixelCount; i++) {
-    const idx = i * 4;
-    const r = src[idx] / 255, g = src[idx + 1] / 255, b = src[idx + 2] / 255;
-    const a = src[idx + 3];
-
-    const blend = 1 - Math.max(0, Math.min(1, lightmapL[i] / 100));
-    const cR = _overlay(r, blend);
-    const cG = _overlay(g, blend);
-    const cB = _overlay(b, blend);
-
-    dst[idx]     = Math.round(Math.min(255, Math.max(0, (r + (cR - r) * intensity) * 255)));
-    dst[idx + 1] = Math.round(Math.min(255, Math.max(0, (g + (cG - g) * intensity) * 255)));
-    dst[idx + 2] = Math.round(Math.min(255, Math.max(0, (b + (cB - b) * intensity) * 255)));
-    dst[idx + 3] = a;
-  }
-}
-
-function correctGamma(src, dst, lightmapL, _la, _lb, intensity, pixelCount) {
-  const log05 = Math.log(0.5);
-  for (let i = 0; i < pixelCount; i++) {
-    const idx = i * 4;
-    const r = src[idx] / 255, g = src[idx + 1] / 255, b = src[idx + 2] / 255;
-    const a = src[idx + 3];
-
-    const lm = Math.max(0.01, Math.min(0.99, lightmapL[i] / 100));
-    const gamma = log05 / Math.log(lm);
-    const cR = Math.pow(Math.max(0, r), gamma);
-    const cG = Math.pow(Math.max(0, g), gamma);
-    const cB = Math.pow(Math.max(0, b), gamma);
 
     dst[idx]     = Math.round(Math.min(255, Math.max(0, (r + (cR - r) * intensity) * 255)));
     dst[idx + 1] = Math.round(Math.min(255, Math.max(0, (g + (cG - g) * intensity) * 255)));
@@ -271,25 +231,38 @@ function correctLevels(src, dst, lightmapL, _la, _lb, intensity, pixelCount) {
 const MODE_FUNCTIONS = {
   'lab-divide': correctLabDivide,
   'rgb-divide': correctRgbDivide,
-  'screen':     correctScreen,
-  'soft-light': correctSoftLight,
-  'overlay':    correctOverlay,
-  'gamma':      correctGamma,
   'additive':   correctAdditive,
   'levels':     correctLevels,
 };
 
-function applyCorrection(srcData, lightmapL, lightmapA, lightmapB, intensity, mode) {
+/**
+ * @param {ImageData} srcData
+ * @param {Float32Array} lightmapL
+ * @param {Float32Array} lightmapA
+ * @param {Float32Array} lightmapB
+ * @param {number} intensity 0–1
+ * @param {string} mode
+ * @param {{softShoulder: boolean, highlightGuard: boolean}} highlights
+ */
+function applyCorrection(srcData, lightmapL, lightmapA, lightmapB, intensity, mode, highlights) {
   const w = srcData.width;
   const h = srcData.height;
+  const pixelCount = w * h;
   const out = new ImageData(w, h);
   const fn = MODE_FUNCTIONS[mode || 'lab-divide'];
-  fn(srcData.data, out.data, lightmapL, lightmapA, lightmapB, intensity, w * h);
+  fn(srcData.data, out.data, lightmapL, lightmapA, lightmapB, intensity, pixelCount);
+
+  // Post-process highlight protection (order matters: guard first, then shoulder)
+  if (highlights) {
+    if (highlights.highlightGuard) applyHighlightGuard(out, srcData, pixelCount);
+    if (highlights.softShoulder)   applySoftShoulder(out, pixelCount);
+  }
+
   return out;
 }
 
 // ═══════════════════════════════════════════════════════════════
-// Lightmap rendering (unchanged)
+// Lightmap rendering
 // ═══════════════════════════════════════════════════════════════
 
 function renderLightmapImage(lightmapL, lightmapA, lightmapB, w, h, colorMode) {

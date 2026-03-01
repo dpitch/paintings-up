@@ -1,0 +1,90 @@
+// lang.js — Internationalization (FR / EN)
+
+const I18N = {
+  fr: {
+    title: 'Paintings Up',
+    subtitle: 'Corriger l\'éclairage inégal sur les photos de tableaux',
+    dropText: 'Déposez une photo ici, ou cliquez pour parcourir',
+    intensity: 'Intensité',
+    showLightmap: 'Voir la lightmap',
+    download: 'Télécharger corrigé',
+    lightmapGray: 'Lightmap (gris)',
+    lightmapColor: 'Lightmap (couleur)',
+    before: 'Avant',
+    after: 'Après',
+    loading: 'Chargement de l\'image...',
+    sampling: 'Échantillonnage des bords...',
+    buildingLightmap: 'Construction de la lightmap...',
+    applying: 'Application de la correction...',
+    highlightSection: 'Protection hautes lumières',
+    // Correction modes
+    'mode.lab-divide': 'LAB Divide',
+    'mode.lab-divide.desc': 'Correction perceptuelle de luminosité en espace LAB',
+    'mode.rgb-divide': 'RGB Divide',
+    'mode.rgb-divide.desc': 'Division directe par canal — rapide, neutre',
+    'mode.additive': 'Lumière linéaire',
+    'mode.additive.desc': 'Décalage additif simple',
+    'mode.levels': 'Niveaux',
+    'mode.levels.desc': 'Remappage du point blanc par canal',
+    // Highlight options
+    'hl.soft-shoulder': 'Épaule douce',
+    'hl.soft-shoulder.desc': 'Courbe filmique — comprime les hautes lumières au lieu de les écrêter',
+    'hl.highlight-guard': 'Protection clairs',
+    'hl.highlight-guard.desc': 'Réduit la correction sur les pixels lumineux pour préserver le détail',
+  },
+  en: {
+    title: 'Paintings Up',
+    subtitle: 'Fix uneven lighting on framed artwork photos',
+    dropText: 'Drop a painting photo here, or click to browse',
+    intensity: 'Intensity',
+    showLightmap: 'Show lightmap',
+    download: 'Download corrected',
+    lightmapGray: 'Lightmap (gray)',
+    lightmapColor: 'Lightmap (color)',
+    before: 'Before',
+    after: 'After',
+    loading: 'Loading image...',
+    sampling: 'Sampling borders...',
+    buildingLightmap: 'Building lightmap...',
+    applying: 'Applying correction...',
+    highlightSection: 'Highlight protection',
+    // Correction modes
+    'mode.lab-divide': 'LAB Divide',
+    'mode.lab-divide.desc': 'Perceptual luminosity correction in LAB space',
+    'mode.rgb-divide': 'RGB Divide',
+    'mode.rgb-divide.desc': 'Direct per-channel divide — fast, neutral',
+    'mode.additive': 'Linear Light',
+    'mode.additive.desc': 'Simple additive offset',
+    'mode.levels': 'Levels',
+    'mode.levels.desc': 'Remap white point per channel',
+    // Highlight options
+    'hl.soft-shoulder': 'Soft Shoulder',
+    'hl.soft-shoulder.desc': 'Filmic rolloff — compresses highlights instead of clipping',
+    'hl.highlight-guard': 'Highlight Guard',
+    'hl.highlight-guard.desc': 'Eases off correction on bright pixels to preserve detail',
+  },
+};
+
+let currentLang = 'fr';
+
+function t(key) {
+  return I18N[currentLang][key] || I18N['en'][key] || key;
+}
+
+function setLang(lang) {
+  currentLang = lang;
+  document.documentElement.lang = lang;
+
+  // Update all elements with data-i18n
+  document.querySelectorAll('[data-i18n]').forEach(el => {
+    el.textContent = t(el.dataset.i18n);
+  });
+
+  // Update lang switcher active state
+  document.querySelectorAll('.lang-btn').forEach(btn => {
+    btn.classList.toggle('active', btn.dataset.lang === lang);
+  });
+
+  // Dispatch event for dynamic content
+  window.dispatchEvent(new CustomEvent('langchange'));
+}
