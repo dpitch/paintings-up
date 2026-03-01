@@ -172,6 +172,10 @@ document.addEventListener('DOMContentLoaded', () => {
   // ── Load image ─────────────────────────────────────────────
   function loadImage(file) {
     status.textContent = t('loading');
+    // Store original filename without extension
+    const dotIdx = file.name.lastIndexOf('.');
+    window._originalName = dotIdx > 0 ? file.name.substring(0, dotIdx) : file.name;
+
     const img = new Image();
     img.onload = () => {
       const canvas = document.createElement('canvas');

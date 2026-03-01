@@ -61,7 +61,8 @@ function downloadCorrectedImage() {
   const canvas = document.getElementById('result-canvas');
   if (!canvas) return;
   const resized = resizeIfNeeded(canvas, MAX_DIMENSION);
-  downloadCanvasAsJpeg(resized, 'corrected.jpg', MAX_FILE_SIZE);
+  const baseName = window._originalName || 'image';
+  downloadCanvasAsJpeg(resized, baseName + '-corrected.jpg', MAX_FILE_SIZE);
 }
 
 function downloadLightmap(colorMode = false) {
