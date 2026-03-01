@@ -558,13 +558,7 @@ body.dark .loading-preview {
   transition: filter 0.8s ease, transform 0.8s ease;
 }
 
-/* Reveal state: image deblurs */
-.loading-overlay.revealing #loading-canvas {
-  filter: blur(0px) saturate(1);
-  transform: scale(1);
-}
-
-/* Exit state: everything scales up and fades */
+/* Exit state: scales up and fades */
 .loading-overlay.exiting {
   pointer-events: none;
 }

@@ -232,23 +232,13 @@ document.addEventListener('DOMContentLoaded', () => {
 
   function hideOverlay() {
     stopScanAnimation();
-    scanLine.style.display = 'none';
-    scanGlow.style.display = 'none';
 
-    // Phase 1: deblur the image (reveal)
-    overlay.classList.add('revealing');
-
-    // Phase 2: scale up and fade out
+    // Scale up + fade out
+    overlay.classList.add('exiting');
     setTimeout(() => {
-      overlay.classList.add('exiting');
-      // Phase 3: remove from DOM
-      setTimeout(() => {
-        overlay.classList.add('hidden');
-        overlay.classList.remove('revealing', 'exiting');
-        scanLine.style.display = '';
-        scanGlow.style.display = '';
-      }, 700);
-    }, 800);
+      overlay.classList.add('hidden');
+      overlay.classList.remove('exiting');
+    }, 700);
   }
 
   // ── Load image ─────────────────────────────────────────────
@@ -277,45 +267,54 @@ document.addEventListener('DOMContentLoaded', () => {
     img.src = URL.createObjectURL(file);
   }
 
-  // Helper: yield to browser for N ms so animations can render
-  function yieldThen(ms) {
-    return new Promise(resolve => setTimeout(resolve, ms));
-  }
-
-  async function processImage(imageData, w, h) {
+  function processImage(imageData, w, h) {
     setStep('sampling');
-    await yieldThen(120);
 
-    const points = sampleBorders(imageData);
+    const worker = new Worker('worker.js');
+    worker.onmessage = function(e) {
+      const msg = e.data;
 
-    setStep('lightmap');
-    await yieldThen(120);
+      if (msg.type === 'step') {
+        setStep(msg.step);
+        return;
+      }
 
-    const lightmap = buildLightmap(points, w, h);
+      if (msg.type === 'done') {
+        worker.terminate();
+        setStep('correcting');
 
-    setStep('correcting');
-    await yieldThen(120);
+        // Use setTimeout so the UI updates the step indicator
+        setTimeout(() => {
+          const lightmap = { L: msg.lightmapL, a: msg.lightmapA, b: msg.lightmapB };
 
-    window.appState = {
-      originalData: imageData,
-      lightmap,
-      width: w,
-      height: h,
-      points,
+          window.appState = {
+            originalData: imageData,
+            lightmap,
+            width: w,
+            height: h,
+            points: msg.points,
+          };
+
+          const intensity = intensityInput.value / 100;
+          applyAndRender(intensity);
+
+          // Show UI behind the overlay
+          dropZone.style.display = 'none';
+          controls.style.display = 'block';
+          workspace.classList.add('active');
+          status.textContent = '';
+
+          setTimeout(() => hideOverlay(), 200);
+        }, 60);
+      }
     };
 
-    const intensity = intensityInput.value / 100;
-    applyAndRender(intensity);
-
-    // Show UI behind the overlay
-    dropZone.style.display = 'none';
-    controls.style.display = 'block';
-    workspace.classList.add('active');
-    status.textContent = '';
-
-    // Transition out
-    await yieldThen(200);
-    hideOverlay();
+    // Send pixel data to worker (transfer the buffer for zero-copy)
+    const pixelData = new Uint8ClampedArray(imageData.data);
+    worker.postMessage(
+      { pixelData, w, h },
+      [pixelData.buffer]
+    );
   }
 
   function applyAndRender(intensity) {
