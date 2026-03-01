@@ -513,16 +513,10 @@ body.dark .highlight-toggle.on .tc-switch-thumb {
   align-items: center;
   justify-content: center;
   background: var(--bg);
-  transition: opacity 0.5s ease;
 }
 
 .loading-overlay.hidden {
   display: none;
-}
-
-.loading-overlay.fade-out {
-  opacity: 0;
-  pointer-events: none;
 }
 
 .loading-inner {
@@ -533,6 +527,8 @@ body.dark .highlight-toggle.on .tc-switch-thumb {
   max-width: 480px;
   width: 100%;
   padding: 0 1.5rem;
+  transition: transform 0.7s cubic-bezier(0.4, 0, 0.2, 1),
+              opacity 0.7s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 /* Blurred preview with scan */
@@ -544,6 +540,8 @@ body.dark .highlight-toggle.on .tc-switch-thumb {
   overflow: hidden;
   background: var(--surface);
   box-shadow: 0 8px 32px rgba(0,0,0,0.08);
+  transition: filter 0.8s ease, transform 0.7s cubic-bezier(0.4, 0, 0.2, 1),
+              border-radius 0.7s ease;
 }
 
 body.dark .loading-preview {
@@ -557,18 +555,40 @@ body.dark .loading-preview {
   object-fit: cover;
   filter: blur(20px) saturate(1.2);
   transform: scale(1.1); /* hide blur edges */
+  transition: filter 0.8s ease, transform 0.8s ease;
 }
 
-/* Scanning line */
+/* Reveal state: image deblurs */
+.loading-overlay.revealing #loading-canvas {
+  filter: blur(0px) saturate(1);
+  transform: scale(1);
+}
+
+/* Exit state: everything scales up and fades */
+.loading-overlay.exiting {
+  pointer-events: none;
+}
+
+.loading-overlay.exiting .loading-inner {
+  transform: scale(1.05);
+  opacity: 0;
+}
+
+.loading-overlay.exiting .loading-steps {
+  opacity: 0;
+  transition: opacity 0.3s ease;
+}
+
+/* Scanning line — JS-driven via requestAnimationFrame */
 .scan-line {
   position: absolute;
-  top: -2px;
+  top: 0;
   left: 0;
   right: 0;
   height: 2px;
   background: rgba(255,255,255,0.9);
   box-shadow: 0 0 12px 4px rgba(255,255,255,0.4);
-  animation: scanDown 2.5s ease-in-out infinite;
+  will-change: top;
 }
 
 .scan-glow {
@@ -578,12 +598,7 @@ body.dark .loading-preview {
   right: 0;
   height: 60px;
   background: linear-gradient(to bottom, rgba(255,255,255,0.15), transparent);
-  animation: scanDown 2.5s ease-in-out infinite;
-}
-
-@keyframes scanDown {
-  0% { top: -2px; }
-  100% { top: 100%; }
+  will-change: top;
 }
 
 /* Step indicators */
@@ -592,6 +607,7 @@ body.dark .loading-preview {
   flex-direction: column;
   gap: 0.75rem;
   width: 100%;
+  transition: opacity 0.5s ease;
 }
 
 .loading-step {

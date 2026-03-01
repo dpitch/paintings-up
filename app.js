@@ -172,36 +172,53 @@ document.addEventListener('DOMContentLoaded', () => {
   // ── Loading overlay helpers ────────────────────────────────
   const overlay = document.getElementById('loading-overlay');
   const loadingCanvas = document.getElementById('loading-canvas');
+  const scanLine = overlay.querySelector('.scan-line');
+  const scanGlow = overlay.querySelector('.scan-glow');
+  let scanRAF = null;
+
+  function startScanAnimation() {
+    const duration = 2500; // ms per sweep
+    const start = performance.now();
+
+    function tick(now) {
+      const elapsed = (now - start) % duration;
+      const progress = elapsed / duration;
+      // ease-in-out
+      const eased = progress < 0.5
+        ? 2 * progress * progress
+        : 1 - Math.pow(-2 * progress + 2, 2) / 2;
+      const pct = eased * 100;
+      scanLine.style.top = pct + '%';
+      scanGlow.style.top = 'calc(' + pct + '% - 60px)';
+      scanRAF = requestAnimationFrame(tick);
+    }
+    scanRAF = requestAnimationFrame(tick);
+  }
+
+  function stopScanAnimation() {
+    if (scanRAF) {
+      cancelAnimationFrame(scanRAF);
+      scanRAF = null;
+    }
+  }
 
   function showOverlay(img) {
     // Draw blurred preview
     const aspect = img.width / img.height;
-    loadingCanvas.width = 120; // tiny for performance
+    loadingCanvas.width = 120;
     loadingCanvas.height = Math.round(120 / aspect);
     loadingCanvas.getContext('2d').drawImage(img, 0, 0, loadingCanvas.width, loadingCanvas.height);
 
     // Update aspect ratio of container
-    const previewEl = overlay.querySelector('.loading-preview');
-    previewEl.style.aspectRatio = aspect.toFixed(3);
+    overlay.querySelector('.loading-preview').style.aspectRatio = aspect.toFixed(3);
 
-    // Update scan animation to match actual height
-    const scanLine = overlay.querySelector('.scan-line');
-    const scanGlow = overlay.querySelector('.scan-glow');
-    scanLine.style.animation = 'none';
-    scanGlow.style.animation = 'none';
-
-    // Reset steps
+    // Reset state
     overlay.querySelectorAll('.loading-step').forEach(s => {
       s.classList.remove('active', 'done');
     });
+    overlay.classList.remove('hidden', 'revealing', 'exiting');
 
-    overlay.classList.remove('hidden', 'fade-out');
-
-    // Restart scan animation after reflow
-    requestAnimationFrame(() => {
-      scanLine.style.animation = '';
-      scanGlow.style.animation = '';
-    });
+    startScanAnimation();
   }
 
   function setStep(stepName) {
@@ -214,8 +231,24 @@ document.addEventListener('DOMContentLoaded', () => {
   }
 
   function hideOverlay() {
-    overlay.classList.add('fade-out');
-    setTimeout(() => overlay.classList.add('hidden'), 500);
+    stopScanAnimation();
+    scanLine.style.display = 'none';
+    scanGlow.style.display = 'none';
+
+    // Phase 1: deblur the image (reveal)
+    overlay.classList.add('revealing');
+
+    // Phase 2: scale up and fade out
+    setTimeout(() => {
+      overlay.classList.add('exiting');
+      // Phase 3: remove from DOM
+      setTimeout(() => {
+        overlay.classList.add('hidden');
+        overlay.classList.remove('revealing', 'exiting');
+        scanLine.style.display = '';
+        scanGlow.style.display = '';
+      }, 700);
+    }, 800);
   }
 
   // ── Load image ─────────────────────────────────────────────
@@ -244,40 +277,45 @@ document.addEventListener('DOMContentLoaded', () => {
     img.src = URL.createObjectURL(file);
   }
 
-  function processImage(imageData, w, h) {
+  // Helper: yield to browser for N ms so animations can render
+  function yieldThen(ms) {
+    return new Promise(resolve => setTimeout(resolve, ms));
+  }
+
+  async function processImage(imageData, w, h) {
     setStep('sampling');
+    await yieldThen(120);
 
-    setTimeout(() => {
-      const points = sampleBorders(imageData);
+    const points = sampleBorders(imageData);
 
-      setStep('lightmap');
-      setTimeout(() => {
-        const lightmap = buildLightmap(points, w, h);
+    setStep('lightmap');
+    await yieldThen(120);
 
-        setStep('correcting');
-        setTimeout(() => {
-          window.appState = {
-            originalData: imageData,
-            lightmap,
-            width: w,
-            height: h,
-            points,
-          };
+    const lightmap = buildLightmap(points, w, h);
 
-          const intensity = intensityInput.value / 100;
-          applyAndRender(intensity);
+    setStep('correcting');
+    await yieldThen(120);
 
-          // Show UI
-          dropZone.style.display = 'none';
-          controls.style.display = 'block';
-          workspace.classList.add('active');
-          status.textContent = '';
+    window.appState = {
+      originalData: imageData,
+      lightmap,
+      width: w,
+      height: h,
+      points,
+    };
 
-          // Fade out overlay
-          setTimeout(() => hideOverlay(), 300);
-        }, 50);
-      }, 50);
-    }, 50);
+    const intensity = intensityInput.value / 100;
+    applyAndRender(intensity);
+
+    // Show UI behind the overlay
+    dropZone.style.display = 'none';
+    controls.style.display = 'block';
+    workspace.classList.add('active');
+    status.textContent = '';
+
+    // Transition out
+    await yieldThen(200);
+    hideOverlay();
   }
 
   function applyAndRender(intensity) {
