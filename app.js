@@ -169,15 +169,67 @@ document.addEventListener('DOMContentLoaded', () => {
   window.addEventListener('mouseup', stopDrag);
   window.addEventListener('touchend', stopDrag);
 
+  // ── Loading overlay helpers ────────────────────────────────
+  const overlay = document.getElementById('loading-overlay');
+  const loadingCanvas = document.getElementById('loading-canvas');
+
+  function showOverlay(img) {
+    // Draw blurred preview
+    const aspect = img.width / img.height;
+    loadingCanvas.width = 120; // tiny for performance
+    loadingCanvas.height = Math.round(120 / aspect);
+    loadingCanvas.getContext('2d').drawImage(img, 0, 0, loadingCanvas.width, loadingCanvas.height);
+
+    // Update aspect ratio of container
+    const previewEl = overlay.querySelector('.loading-preview');
+    previewEl.style.aspectRatio = aspect.toFixed(3);
+
+    // Update scan animation to match actual height
+    const scanLine = overlay.querySelector('.scan-line');
+    const scanGlow = overlay.querySelector('.scan-glow');
+    scanLine.style.animation = 'none';
+    scanGlow.style.animation = 'none';
+
+    // Reset steps
+    overlay.querySelectorAll('.loading-step').forEach(s => {
+      s.classList.remove('active', 'done');
+    });
+
+    overlay.classList.remove('hidden', 'fade-out');
+
+    // Restart scan animation after reflow
+    requestAnimationFrame(() => {
+      scanLine.style.animation = '';
+      scanGlow.style.animation = '';
+    });
+  }
+
+  function setStep(stepName) {
+    const steps = ['reading', 'sampling', 'lightmap', 'correcting'];
+    const idx = steps.indexOf(stepName);
+    overlay.querySelectorAll('.loading-step').forEach((el, i) => {
+      el.classList.toggle('done', i < idx);
+      el.classList.toggle('active', i === idx);
+    });
+  }
+
+  function hideOverlay() {
+    overlay.classList.add('fade-out');
+    setTimeout(() => overlay.classList.add('hidden'), 500);
+  }
+
   // ── Load image ─────────────────────────────────────────────
   function loadImage(file) {
-    status.textContent = t('loading');
+    status.textContent = '';
     // Store original filename without extension
     const dotIdx = file.name.lastIndexOf('.');
     window._originalName = dotIdx > 0 ? file.name.substring(0, dotIdx) : file.name;
 
     const img = new Image();
     img.onload = () => {
+      showOverlay(img);
+      setStep('reading');
+
       const canvas = document.createElement('canvas');
       canvas.width = img.width;
       canvas.height = img.height;
@@ -185,38 +237,47 @@ document.addEventListener('DOMContentLoaded', () => {
       ctx.drawImage(img, 0, 0);
       const imageData = ctx.getImageData(0, 0, img.width, img.height);
 
-      status.textContent = t('sampling');
-      requestAnimationFrame(() => {
+      setTimeout(() => {
         processImage(imageData, img.width, img.height);
-      });
+      }, 400);
     };
     img.src = URL.createObjectURL(file);
   }
 
   function processImage(imageData, w, h) {
-    status.textContent = t('buildingLightmap');
+    setStep('sampling');
 
     setTimeout(() => {
       const points = sampleBorders(imageData);
-      const lightmap = buildLightmap(points, w, h);
 
-      window.appState = {
-        originalData: imageData,
-        lightmap,
-        width: w,
-        height: h,
-        points,
-      };
+      setStep('lightmap');
+      setTimeout(() => {
+        const lightmap = buildLightmap(points, w, h);
 
-      const intensity = intensityInput.value / 100;
-      applyAndRender(intensity);
+        setStep('correcting');
+        setTimeout(() => {
+          window.appState = {
+            originalData: imageData,
+            lightmap,
+            width: w,
+            height: h,
+            points,
+          };
 
-      // Show UI
-      dropZone.style.display = 'none';
-      controls.style.display = 'block';
-      workspace.classList.add('active');
-      status.textContent = '';
-    }, 10);
+          const intensity = intensityInput.value / 100;
+          applyAndRender(intensity);
+
+          // Show UI
+          dropZone.style.display = 'none';
+          controls.style.display = 'block';
+          workspace.classList.add('active');
+          status.textContent = '';
+
+          // Fade out overlay
+          setTimeout(() => hideOverlay(), 300);
+        }, 50);
+      }, 50);
+    }, 50);
   }
 
   function applyAndRender(intensity) {

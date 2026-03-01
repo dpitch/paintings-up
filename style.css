@@ -504,6 +504,137 @@ body.dark .highlight-toggle.on .tc-switch-thumb {
   accent-color: var(--accent);
 }
 
+/* ── Loading overlay ─────────────────────────────────────── */
+.loading-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 100;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--bg);
+  transition: opacity 0.5s ease;
+}
+
+.loading-overlay.hidden {
+  display: none;
+}
+
+.loading-overlay.fade-out {
+  opacity: 0;
+  pointer-events: none;
+}
+
+.loading-inner {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2rem;
+  max-width: 480px;
+  width: 100%;
+  padding: 0 1.5rem;
+}
+
+/* Blurred preview with scan */
+.loading-preview {
+  position: relative;
+  width: 100%;
+  aspect-ratio: 4 / 3;
+  border-radius: 12px;
+  overflow: hidden;
+  background: var(--surface);
+  box-shadow: 0 8px 32px rgba(0,0,0,0.08);
+}
+
+body.dark .loading-preview {
+  box-shadow: 0 8px 32px rgba(0,0,0,0.3);
+}
+
+#loading-canvas {
+  width: 100%;
+  height: 100%;
+  display: block;
+  object-fit: cover;
+  filter: blur(20px) saturate(1.2);
+  transform: scale(1.1); /* hide blur edges */
+}
+
+/* Scanning line */
+.scan-line {
+  position: absolute;
+  top: -2px;
+  left: 0;
+  right: 0;
+  height: 2px;
+  background: rgba(255,255,255,0.9);
+  box-shadow: 0 0 12px 4px rgba(255,255,255,0.4);
+  animation: scanDown 2.5s ease-in-out infinite;
+}
+
+.scan-glow {
+  position: absolute;
+  top: -60px;
+  left: 0;
+  right: 0;
+  height: 60px;
+  background: linear-gradient(to bottom, rgba(255,255,255,0.15), transparent);
+  animation: scanDown 2.5s ease-in-out infinite;
+}
+
+@keyframes scanDown {
+  0% { top: -2px; }
+  100% { top: 100%; }
+}
+
+/* Step indicators */
+.loading-steps {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+  width: 100%;
+}
+
+.loading-step {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  font-size: 0.875rem;
+  color: var(--fg-faint);
+  transition: color 0.3s;
+}
+
+.loading-step.active {
+  color: var(--fg);
+}
+
+.loading-step.done {
+  color: var(--fg-muted);
+}
+
+.step-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--border);
+  flex-shrink: 0;
+  transition: background 0.3s, transform 0.3s;
+}
+
+.loading-step.active .step-dot {
+  background: var(--fg);
+  transform: scale(1.3);
+  animation: pulse 1s ease-in-out infinite;
+}
+
+.loading-step.done .step-dot {
+  background: var(--fg-muted);
+}
+
+@keyframes pulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.4; }
+}
+
 /* Status */
 #status {
   margin-top: 1rem;

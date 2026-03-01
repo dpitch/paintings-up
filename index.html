@@ -64,6 +64,35 @@
     <div id="technique-panel"></div>
   </div>
 
+  <!-- Loading overlay -->
+  <div id="loading-overlay" class="loading-overlay hidden">
+    <div class="loading-inner">
+      <div class="loading-preview">
+        <canvas id="loading-canvas"></canvas>
+        <div class="scan-line"></div>
+        <div class="scan-glow"></div>
+      </div>
+      <div class="loading-steps">
+        <div class="loading-step" data-step="reading">
+          <div class="step-dot"></div>
+          <span data-i18n="stepReading">Lecture de l'image…</span>
+        </div>
+        <div class="loading-step" data-step="sampling">
+          <div class="step-dot"></div>
+          <span data-i18n="stepSampling">Analyse des bords du tableau…</span>
+        </div>
+        <div class="loading-step" data-step="lightmap">
+          <div class="step-dot"></div>
+          <span data-i18n="stepLightmap">Construction de la carte de lumière…</span>
+        </div>
+        <div class="loading-step" data-step="correcting">
+          <div class="step-dot"></div>
+          <span data-i18n="stepCorrecting">Correction de l'éclairage…</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
   <p id="status"></p>
 
   <script src="lang.js"></script>

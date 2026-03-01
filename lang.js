@@ -36,6 +36,10 @@ const I18N = {
     methodBilinear: 'Bilinéaire',
     methodPoly2: 'Poly degré 2',
     methodPoly3: 'Poly degré 3',
+    stepReading: 'Lecture de l\'image…',
+    stepSampling: 'Analyse des bords du tableau…',
+    stepLightmap: 'Construction de la carte de lumière…',
+    stepCorrecting: 'Correction de l\'éclairage…',
   },
   en: {
     title: 'Paintings Up',
@@ -72,6 +76,10 @@ const I18N = {
     methodBilinear: 'Bilinear',
     methodPoly2: 'Poly degree 2',
     methodPoly3: 'Poly degree 3',
+    stepReading: 'Reading the image…',
+    stepSampling: 'Analyzing painting edges…',
+    stepLightmap: 'Building the light map…',
+    stepCorrecting: 'Correcting the lighting…',
   },
 };
 
