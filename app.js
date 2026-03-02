@@ -309,15 +309,27 @@ document.addEventListener('DOMContentLoaded', () => {
       showOverlay(img);
       setStep('reading');
 
+      // Downscale to max 6000px before processing
+      const MAX_DIM = 6000;
+      let w = img.width;
+      let h = img.height;
+      if (w > MAX_DIM || h > MAX_DIM) {
+        const scale = Math.min(MAX_DIM / w, MAX_DIM / h);
+        w = Math.round(w * scale);
+        h = Math.round(h * scale);
+      }
+
       const canvas = document.createElement('canvas');
-      canvas.width = img.width;
-      canvas.height = img.height;
+      canvas.width = w;
+      canvas.height = h;
       const ctx = canvas.getContext('2d');
-      ctx.drawImage(img, 0, 0);
-      const imageData = ctx.getImageData(0, 0, img.width, img.height);
+      ctx.imageSmoothingEnabled = true;
+      ctx.imageSmoothingQuality = 'high';
+      ctx.drawImage(img, 0, 0, w, h);
+      const imageData = ctx.getImageData(0, 0, w, h);
 
       setTimeout(() => {
-        processImage(imageData, img.width, img.height);
+        processImage(imageData, w, h);
       }, 400);
     };
     img.src = URL.createObjectURL(file);
