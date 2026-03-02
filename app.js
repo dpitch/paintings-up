@@ -366,11 +366,20 @@ document.addEventListener('DOMContentLoaded', () => {
           const intensity = intensityInput.value / 100;
           applyAndRender(intensity);
 
-          // Show UI behind the overlay
+          // Show UI with enter animation
           dropZone.style.display = 'none';
           controls.style.display = 'block';
+          controls.classList.add('entering');
           workspace.classList.add('active');
+          workspace.classList.add('entering');
           status.textContent = '';
+
+          // Clean up animation classes after they complete
+          const onDone = (e) => {
+            e.target.classList.remove('entering');
+          };
+          controls.addEventListener('animationend', onDone, { once: true });
+          workspace.addEventListener('animationend', onDone, { once: true });
 
           setTimeout(() => hideOverlay(), 200);
         }, 60);
@@ -385,26 +394,65 @@ document.addEventListener('DOMContentLoaded', () => {
     );
   }
 
+  let correctionWorker = null;
+  let correctionPending = false;
+
   function applyAndRender(intensity) {
     const state = window.appState;
     if (!state) return;
 
-    status.textContent = t('applying');
+    // Show spinner overlay on comparison area
+    if (!correctionPending) {
+      const existingOverlay = comparisonArea.querySelector('.correction-overlay');
+      if (!existingOverlay) {
+        const overlay = document.createElement('div');
+        overlay.className = 'correction-overlay';
+        overlay.innerHTML = '<div class="correction-spinner"></div>';
+        comparisonArea.appendChild(overlay);
+      }
+      techniquePanel.classList.add('processing');
+    }
+    correctionPending = true;
 
-    setTimeout(() => {
-      const corrected = applyCorrection(
-        state.originalData,
-        state.lightmap.L,
-        state.lightmap.a,
-        state.lightmap.b,
-        intensity,
-        currentMode,
-        highlightFlags
+    // Terminate previous worker if still running
+    if (correctionWorker) {
+      correctionWorker.terminate();
+      correctionWorker = null;
+    }
+
+    correctionWorker = new Worker('correction-worker.js');
+    correctionWorker.onmessage = function(e) {
+      correctionWorker.terminate();
+      correctionWorker = null;
+      correctionPending = false;
+
+      const { outData } = e.data;
+      state.correctedData = new ImageData(
+        new Uint8ClampedArray(outData),
+        state.width,
+        state.height
       );
-      state.correctedData = corrected;
+
+      // Remove spinner overlay
+      const spinnerOverlay = comparisonArea.querySelector('.correction-overlay');
+      if (spinnerOverlay) spinnerOverlay.remove();
+      techniquePanel.classList.remove('processing');
+
       renderComparison();
-      status.textContent = '';
-    }, 10);
+    };
+
+    // Send data to worker (copy — can't transfer originalData since we reuse it)
+    correctionWorker.postMessage({
+      srcData: state.originalData.data,
+      lightmapL: state.lightmap.L,
+      lightmapA: state.lightmap.a,
+      lightmapB: state.lightmap.b,
+      intensity,
+      mode: currentMode,
+      highlights: { ...highlightFlags },
+      width: state.width,
+      height: state.height,
+    });
   }
 
   function renderComparison() {

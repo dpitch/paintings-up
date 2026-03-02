@@ -41,6 +41,8 @@ const I18N = {
     stepLightmap: 'Construction de la carte de lumière…',
     stepCorrecting: 'Correction de l\'éclairage…',
     advanced: 'Avancé',
+    preparing: 'Préparation…',
+    processingMode: 'Changement en cours…',
   },
   en: {
     title: 'Paintings Up',
@@ -82,6 +84,8 @@ const I18N = {
     stepLightmap: 'Building the light map…',
     stepCorrecting: 'Correcting the lighting…',
     advanced: 'Advanced',
+    preparing: 'Preparing…',
+    processingMode: 'Switching mode…',
   },
 };
 

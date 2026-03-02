@@ -27,26 +27,47 @@ function resizeIfNeeded(srcCanvas, maxDim) {
 
 /**
  * Export a canvas as WebP using toBlob (async, memory-efficient).
- * Iterates quality downward until file size ≤ maxBytes.
+ * Uses binary search on quality to find optimal size ≤ maxBytes (4-5 passes max).
  */
 async function downloadCanvasAsWebp(canvas, filename, maxBytes) {
-  let quality = 0.92;
+  let lo = 0.1;
+  let hi = 0.92;
+  let bestBlob = null;
 
-  while (quality >= 0.1) {
-    const blob = await new Promise(resolve =>
-      canvas.toBlob(resolve, 'image/webp', quality)
-    );
-    if (blob.size <= maxBytes || quality <= 0.1) {
-      const url = URL.createObjectURL(blob);
-      const link = document.createElement('a');
-      link.download = filename;
-      link.href = url;
-      link.click();
-      URL.revokeObjectURL(url);
-      return;
+  // First try at max quality — if it fits, no search needed
+  const firstBlob = await new Promise(resolve =>
+    canvas.toBlob(resolve, 'image/webp', hi)
+  );
+  if (firstBlob.size <= maxBytes) {
+    bestBlob = firstBlob;
+  } else {
+    // Binary search for best quality that fits
+    for (let i = 0; i < 5; i++) {
+      const mid = (lo + hi) / 2;
+      const blob = await new Promise(resolve =>
+        canvas.toBlob(resolve, 'image/webp', mid)
+      );
+      if (blob.size <= maxBytes) {
+        bestBlob = blob;
+        lo = mid;
+      } else {
+        hi = mid;
+      }
     }
-    quality -= 0.05;
+    // If nothing fit, use lowest quality
+    if (!bestBlob) {
+      bestBlob = await new Promise(resolve =>
+        canvas.toBlob(resolve, 'image/webp', 0.1)
+      );
+    }
   }
+
+  const url = URL.createObjectURL(bestBlob);
+  const link = document.createElement('a');
+  link.download = filename;
+  link.href = url;
+  link.click();
+  URL.revokeObjectURL(url);
 }
 
 /**
@@ -63,12 +84,28 @@ function downloadCanvasPng(canvas, filename) {
   }, 'image/png');
 }
 
-function downloadCorrectedImage() {
+async function downloadCorrectedImage() {
   const canvas = document.getElementById('result-canvas');
   if (!canvas) return;
-  const resized = resizeIfNeeded(canvas, MAX_DIMENSION);
-  const baseName = window._originalName || 'image';
-  downloadCanvasAsWebp(resized, baseName + '-corrected.webp', 1.5 * 1024 * 1024);
+
+  // Set button to loading state
+  const btn = document.querySelector('[data-i18n="download"]');
+  if (btn) {
+    btn.classList.add('btn-loading');
+    btn.innerHTML = '<span class="btn-spinner"></span>' + t('preparing');
+  }
+
+  try {
+    const resized = resizeIfNeeded(canvas, MAX_DIMENSION);
+    const baseName = window._originalName || 'image';
+    await downloadCanvasAsWebp(resized, baseName + '-corrected.webp', 1.5 * 1024 * 1024);
+  } finally {
+    // Restore button
+    if (btn) {
+      btn.classList.remove('btn-loading');
+      btn.textContent = t('download');
+    }
+  }
 }
 
 function downloadLightmap(colorMode = false) {

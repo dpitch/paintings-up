@@ -720,6 +720,91 @@ body.dark .loading-preview {
   50% { opacity: 0.4; }
 }
 
+/* ── Dashboard enter transition ────────────────────────────── */
+#controls.entering,
+#workspace.entering {
+  animation: dashboard-enter 0.4s ease-out both;
+}
+
+#workspace.entering {
+  animation-delay: 0.08s;
+}
+
+@keyframes dashboard-enter {
+  from {
+    opacity: 0;
+    transform: translateY(12px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* ── Correction spinner overlay ───────────────────────────── */
+.correction-overlay {
+  position: absolute;
+  inset: 0;
+  z-index: 20;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(255, 255, 255, 0.45);
+  backdrop-filter: blur(2px);
+  border-radius: 8px;
+  opacity: 0;
+  animation: fade-in 0.15s ease forwards;
+}
+
+body.dark .correction-overlay {
+  background: rgba(0, 0, 0, 0.4);
+}
+
+@keyframes fade-in {
+  to { opacity: 1; }
+}
+
+.correction-spinner {
+  width: 28px;
+  height: 28px;
+  border: 2.5px solid var(--border);
+  border-top-color: var(--fg);
+  border-radius: 50%;
+  animation: spin 0.6s linear infinite;
+}
+
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
+
+/* Disable technique cards while processing */
+#technique-panel.processing .technique-card {
+  pointer-events: none;
+  opacity: 0.6;
+}
+
+/* ── Export button loading state ───────────────────────────── */
+button.btn-loading {
+  pointer-events: none;
+  opacity: 0.7;
+}
+
+button.btn-loading .btn-spinner {
+  display: inline-block;
+  width: 12px;
+  height: 12px;
+  border: 1.5px solid currentColor;
+  border-top-color: transparent;
+  border-radius: 50%;
+  animation: spin 0.6s linear infinite;
+  vertical-align: middle;
+  margin-right: 0.35rem;
+}
+
+.btn-spinner {
+  display: none;
+}
+
 /* Status */
 #status {
   margin-top: 1rem;
