@@ -309,8 +309,8 @@ document.addEventListener('DOMContentLoaded', () => {
       showOverlay(img);
       setStep('reading');
 
-      // Downscale to max 6000px before processing
-      const MAX_DIM = 6000;
+      // Downscale to max 4000px before processing
+      const MAX_DIM = 4000;
       let w = img.width;
       let h = img.height;
       if (w > MAX_DIM || h > MAX_DIM) {

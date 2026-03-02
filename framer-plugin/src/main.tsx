@@ -15,8 +15,8 @@ if (!image) {
 const { mimeType } = await image.getData()
 const bitmap = await image.loadBitmap()
 
-// Downscale if larger than 6000px on either dimension
-const MAX_DIM = 6000
+// Downscale if larger than 4000px on either dimension
+const MAX_DIM = 4000
 let w = bitmap.width
 let h = bitmap.height
 if (w > MAX_DIM || h > MAX_DIM) {

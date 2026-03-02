@@ -1,7 +1,6 @@
 // export.js — Download corrected image and lightmap
 
-const MAX_DIMENSION = 6000;
-const MAX_FILE_SIZE = 1.5 * 1024 * 1024; // 1.5 MB
+const MAX_DIMENSION = 4000;
 
 /**
  * Resize a canvas if either dimension exceeds maxDim, preserving aspect ratio.
@@ -27,33 +26,41 @@ function resizeIfNeeded(srcCanvas, maxDim) {
 }
 
 /**
- * Export a canvas as WebP, iterating quality downward until file size ≤ maxBytes.
+ * Export a canvas as WebP using toBlob (async, memory-efficient).
+ * Iterates quality downward until file size ≤ maxBytes.
  */
-function downloadCanvasAsWebp(canvas, filename, maxBytes) {
+async function downloadCanvasAsWebp(canvas, filename, maxBytes) {
   let quality = 0.92;
-  let dataUrl;
 
   while (quality >= 0.1) {
-    dataUrl = canvas.toDataURL('image/webp', quality);
-    const approxBytes = Math.round((dataUrl.length - 'data:image/webp;base64,'.length) * 3 / 4);
-    if (approxBytes <= maxBytes) break;
+    const blob = await new Promise(resolve =>
+      canvas.toBlob(resolve, 'image/webp', quality)
+    );
+    if (blob.size <= maxBytes || quality <= 0.1) {
+      const url = URL.createObjectURL(blob);
+      const link = document.createElement('a');
+      link.download = filename;
+      link.href = url;
+      link.click();
+      URL.revokeObjectURL(url);
+      return;
+    }
     quality -= 0.05;
   }
-
-  const link = document.createElement('a');
-  link.download = filename;
-  link.href = dataUrl;
-  link.click();
 }
 
 /**
  * Download as PNG (kept for lightmaps).
  */
 function downloadCanvasPng(canvas, filename) {
-  const link = document.createElement('a');
-  link.download = filename;
-  link.href = canvas.toDataURL('image/png');
-  link.click();
+  canvas.toBlob(blob => {
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement('a');
+    link.download = filename;
+    link.href = url;
+    link.click();
+    URL.revokeObjectURL(url);
+  }, 'image/png');
 }
 
 function downloadCorrectedImage() {
@@ -61,7 +68,7 @@ function downloadCorrectedImage() {
   if (!canvas) return;
   const resized = resizeIfNeeded(canvas, MAX_DIMENSION);
   const baseName = window._originalName || 'image';
-  downloadCanvasAsWebp(resized, baseName + '-corrected.webp', MAX_FILE_SIZE);
+  downloadCanvasAsWebp(resized, baseName + '-corrected.webp', 1.5 * 1024 * 1024);
 }
 
 function downloadLightmap(colorMode = false) {
