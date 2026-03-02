@@ -1,6 +1,6 @@
 // export.js — Download corrected image and lightmap
 
-const MAX_DIMENSION = 5000;
+const MAX_DIMENSION = 6000;
 const MAX_FILE_SIZE = 1.5 * 1024 * 1024; // 1.5 MB
 
 /**
@@ -27,16 +27,15 @@ function resizeIfNeeded(srcCanvas, maxDim) {
 }
 
 /**
- * Export a canvas as JPEG, iterating quality downward until file size ≤ maxBytes.
+ * Export a canvas as WebP, iterating quality downward until file size ≤ maxBytes.
  */
-function downloadCanvasAsJpeg(canvas, filename, maxBytes) {
+function downloadCanvasAsWebp(canvas, filename, maxBytes) {
   let quality = 0.92;
   let dataUrl;
 
   while (quality >= 0.1) {
-    dataUrl = canvas.toDataURL('image/jpeg', quality);
-    // dataUrl length in base64 ≈ actual bytes * 4/3 + header
-    const approxBytes = Math.round((dataUrl.length - 'data:image/jpeg;base64,'.length) * 3 / 4);
+    dataUrl = canvas.toDataURL('image/webp', quality);
+    const approxBytes = Math.round((dataUrl.length - 'data:image/webp;base64,'.length) * 3 / 4);
     if (approxBytes <= maxBytes) break;
     quality -= 0.05;
   }
@@ -62,7 +61,7 @@ function downloadCorrectedImage() {
   if (!canvas) return;
   const resized = resizeIfNeeded(canvas, MAX_DIMENSION);
   const baseName = window._originalName || 'image';
-  downloadCanvasAsJpeg(resized, baseName + '-corrected.jpg', MAX_FILE_SIZE);
+  downloadCanvasAsWebp(resized, baseName + '-corrected.webp', MAX_FILE_SIZE);
 }
 
 function downloadLightmap(colorMode = false) {

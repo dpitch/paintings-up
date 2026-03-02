@@ -1,0 +1,24 @@
+{
+  "name": "paintings-up-framer-plugin",
+  "private": true,
+  "version": "1.0.0",
+  "type": "module",
+  "scripts": {
+    "dev": "vite",
+    "build": "vite build"
+  },
+  "dependencies": {
+    "framer-plugin": "^3",
+    "react": "^18",
+    "react-dom": "^18",
+    "vite-plugin-mkcert": "^1"
+  },
+  "devDependencies": {
+    "@types/react": "^18",
+    "@types/react-dom": "^18",
+    "@vitejs/plugin-react-swc": "^3",
+    "vite-plugin-framer": "^1",
+    "typescript": "^5.3",
+    "vite": "^6"
+  }
+}

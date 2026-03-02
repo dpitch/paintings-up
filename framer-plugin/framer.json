@@ -1,0 +1,6 @@
+{
+  "id": "pntgup",
+  "name": "Paintings Up",
+  "modes": ["canvas", "editImage"],
+  "icon": "/icon.svg"
+}

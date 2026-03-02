@@ -1,0 +1,34 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Paintings Up</title>
+    <script type="module" src="/index-DysWbDyz.mjs"></script>
+  </head>
+  <body>
+    <div id="root"></div>
+  
+      <div id="framer-environment-error" style="display: none;">
+          <svg xmlns="http://www.w3.org/2000/svg" width="26" height="26" viewbox="0 0 20 20"><path d="M5 2.5h10v5h-5Zm0 5h5l5 5H5Zm5 5v5l-5-5Z"/></svg>
+          <p>This is a Framer Plugin. Begin your development by opening this plugin within Framer. <a href="https://framer.com/plugins/open">Learn More</a></p>
+      </div>
+      
+      <script>
+      document.addEventListener('DOMContentLoaded', () => {
+          // Framer Plugin development iframe detection
+          if (window.self === window.top) {
+              document.getElementById('framer-environment-error').style.display = 'flex';
+          }
+          // Override Favicon
+          var link = document.querySelector("link[rel~='icon']");
+          if (!link) {
+              link = document.createElement('link');
+              link.rel = 'icon';
+              document.head.appendChild(link);
+          }
+          link.href = "data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIxNiIgaGVpZ2h0PSIxNiIgdmlld2JveD0iMCAwIDE2IDE2Ij48cGF0aCBkPSJNMyAxaDEwdjVIOFptMCA1aDVsNSA1SDNabTUgNXY1bC01LTVaIi8+PC9zdmc+";
+      });
+      </script>
+      </body>
+</html>
