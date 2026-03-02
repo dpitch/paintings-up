@@ -40,6 +40,7 @@ const I18N = {
     stepSampling: 'Analyse des bords du tableau…',
     stepLightmap: 'Construction de la carte de lumière…',
     stepCorrecting: 'Correction de l\'éclairage…',
+    advanced: 'Avancé',
   },
   en: {
     title: 'Paintings Up',
@@ -80,6 +81,7 @@ const I18N = {
     stepSampling: 'Analyzing painting edges…',
     stepLightmap: 'Building the light map…',
     stepCorrecting: 'Correcting the lighting…',
+    advanced: 'Advanced',
   },
 };
 

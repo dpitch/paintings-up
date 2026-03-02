@@ -515,6 +515,70 @@ body.dark .highlight-toggle.on .tc-switch-thumb {
   accent-color: var(--accent);
 }
 
+/* ── Advanced section (collapsible) ─────────────────────── */
+.advanced-section {
+  width: 100%;
+}
+
+.advanced-toggle {
+  cursor: pointer;
+  list-style: none;
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  user-select: none;
+  -webkit-user-select: none;
+}
+
+.advanced-toggle::-webkit-details-marker {
+  display: none;
+}
+
+.advanced-toggle::before {
+  content: '›';
+  font-size: 1rem;
+  font-weight: 600;
+  color: var(--fg-faint);
+  transition: transform 0.2s;
+  display: inline-block;
+  line-height: 1;
+}
+
+.advanced-section[open] > .advanced-toggle::before {
+  transform: rotate(90deg);
+}
+
+.advanced-content {
+  display: flex;
+  flex-direction: column;
+  gap: 0.375rem;
+}
+
+.advanced-content .panel-separator:first-child {
+  padding-top: 0.3rem;
+}
+
+.advanced-buttons {
+  display: flex;
+  gap: 0.5rem;
+}
+
+.advanced-buttons button {
+  flex: 1;
+  padding: 0.4rem 0.75rem;
+  border: 1px solid var(--btn-border);
+  border-radius: 6px;
+  background: var(--btn-bg);
+  color: var(--fg);
+  cursor: pointer;
+  font-size: 0.8rem;
+  transition: background 0.1s, border-color 0.25s, color 0.25s;
+}
+
+.advanced-buttons button:hover {
+  background: var(--btn-hover);
+}
+
 /* ── Loading overlay ─────────────────────────────────────── */
 .loading-overlay {
   position: fixed;

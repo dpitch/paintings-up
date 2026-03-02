@@ -50,11 +50,22 @@ document.addEventListener('DOMContentLoaded', () => {
       techniquePanel.appendChild(card);
     });
 
-    // Separator
-    const sep = document.createElement('div');
-    sep.className = 'panel-separator';
-    sep.textContent = t('highlightSection');
-    techniquePanel.appendChild(sep);
+    // ── Advanced section (collapsed by default) ──────────────
+    const details = document.createElement('details');
+    details.className = 'advanced-section';
+    const summary = document.createElement('summary');
+    summary.className = 'panel-separator advanced-toggle';
+    summary.textContent = t('advanced');
+    details.appendChild(summary);
+
+    const advContent = document.createElement('div');
+    advContent.className = 'advanced-content';
+
+    // Highlight section label
+    const hlLabel = document.createElement('div');
+    hlLabel.className = 'panel-separator';
+    hlLabel.textContent = t('highlightSection');
+    advContent.appendChild(hlLabel);
 
     // Highlight toggles
     HIGHLIGHT_OPTIONS.forEach((opt) => {
@@ -75,7 +86,7 @@ document.addEventListener('DOMContentLoaded', () => {
           applyAndRender(intensityInput.value / 100);
         }
       });
-      techniquePanel.appendChild(toggle);
+      advContent.appendChild(toggle);
     });
 
     // Brightness lift slider
@@ -95,7 +106,23 @@ document.addEventListener('DOMContentLoaded', () => {
         applyAndRender(intensityInput.value / 100);
       }
     });
-    techniquePanel.appendChild(liftWrap);
+    advContent.appendChild(liftWrap);
+
+    // Lightmap download buttons
+    const lmLabel = document.createElement('div');
+    lmLabel.className = 'panel-separator';
+    lmLabel.textContent = 'Lightmap';
+    advContent.appendChild(lmLabel);
+
+    const lmBtns = document.createElement('div');
+    lmBtns.className = 'advanced-buttons';
+    lmBtns.innerHTML =
+      `<button onclick="downloadLightmap(false)" data-i18n="lightmapGray">${t('lightmapGray')}</button>` +
+      `<button onclick="downloadLightmap(true)" data-i18n="lightmapColor">${t('lightmapColor')}</button>`;
+    advContent.appendChild(lmBtns);
+
+    details.appendChild(advContent);
+    techniquePanel.appendChild(details);
   }
 
   buildPanel();
