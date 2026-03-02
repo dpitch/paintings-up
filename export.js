@@ -1,6 +1,6 @@
 // export.js — Download corrected image and lightmap
 
-const MAX_DIMENSION = 4000;
+const MAX_DIMENSION = 6000;
 
 /**
  * Resize a canvas if either dimension exceeds maxDim, preserving aspect ratio.
