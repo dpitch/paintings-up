@@ -35,7 +35,7 @@ const imageData = ctx.getImageData(0, 0, w, h)
 // Correction pipeline
 const points = sampleBorders(imageData, 0.03, 20)
 const lightmap = buildLightmap(points, w, h)
-const corrected = applyCorrection(imageData, lightmap.L, lightmap.a, lightmap.b, 0.80)
+const corrected = applyCorrection(imageData, lightmap.L, lightmap.a, lightmap.b, 0.85)
 
 // Write result as WebP
 ctx.putImageData(corrected, 0, 0)

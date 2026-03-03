@@ -144,6 +144,51 @@ body.dragover-global #drop-zone {
   color: var(--fg);
 }
 
+/* Quality mode selector */
+.quality-selector {
+  display: flex;
+  gap: 0.5rem;
+  margin-bottom: 1.5rem;
+}
+
+.quality-btn {
+  padding: 0.6rem 1rem;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  background: var(--surface);
+  cursor: pointer;
+  text-align: left;
+  transition: border-color 0.12s, background 0.12s;
+  min-width: 140px;
+}
+
+.quality-btn:hover {
+  border-color: var(--border-hover);
+  background: var(--surface-hover);
+}
+
+.quality-btn.active {
+  border-color: var(--card-active-bg);
+  background: var(--card-active-bg);
+  color: var(--card-active-fg);
+}
+
+.quality-btn-title {
+  font-size: 0.85rem;
+  font-weight: 600;
+  margin-bottom: 0.15rem;
+}
+
+.quality-btn-desc {
+  font-size: 0.7rem;
+  color: var(--fg-faint);
+  line-height: 1.3;
+}
+
+.quality-btn.active .quality-btn-desc {
+  color: var(--card-active-desc);
+}
+
 #drop-zone .icon {
   margin-bottom: 1rem;
   opacity: 0.5;

@@ -1,6 +1,7 @@
 // app.js — Upload handling, UI interactions, before/after slider, technique switching
 
 window.appState = null;
+window.qualityMode = 'web';
 
 document.addEventListener('DOMContentLoaded', () => {
   const dropZone = document.getElementById('drop-zone');
@@ -17,6 +18,16 @@ document.addEventListener('DOMContentLoaded', () => {
 
   let currentMode = 'lab-divide';
   let highlightFlags = { softShoulder: false, highlightGuard: false };
+
+  // ── Quality mode selector ────────────────────────────────
+  document.querySelectorAll('.quality-btn').forEach(btn => {
+    btn.addEventListener('click', (e) => {
+      e.stopPropagation();
+      document.querySelectorAll('.quality-btn').forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
+      window.qualityMode = btn.dataset.mode;
+    });
+  });
 
   // ── Background slider ──────────────────────────────────────
   const bgSlider = document.getElementById('bg-slider');
@@ -309,14 +320,16 @@ document.addEventListener('DOMContentLoaded', () => {
       showOverlay(img);
       setStep('reading');
 
-      // Downscale to max 6000px before processing
-      const MAX_DIM = 6000;
+      // Downscale to max 6000px before processing (web mode only)
       let w = img.width;
       let h = img.height;
-      if (w > MAX_DIM || h > MAX_DIM) {
-        const scale = Math.min(MAX_DIM / w, MAX_DIM / h);
-        w = Math.round(w * scale);
-        h = Math.round(h * scale);
+      if (window.qualityMode === 'web') {
+        const MAX_DIM = 6000;
+        if (w > MAX_DIM || h > MAX_DIM) {
+          const scale = Math.min(MAX_DIM / w, MAX_DIM / h);
+          w = Math.round(w * scale);
+          h = Math.round(h * scale);
+        }
       }
 
       const canvas = document.createElement('canvas');

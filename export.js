@@ -88,17 +88,25 @@ async function downloadCorrectedImage() {
   const canvas = document.getElementById('result-canvas');
   if (!canvas) return;
 
+  const isFullQuality = window.qualityMode === 'full';
+  const baseName = window._originalName || 'image';
+
   // Set button to loading state
   const btn = document.querySelector('[data-i18n="download"]');
   if (btn) {
     btn.classList.add('btn-loading');
-    btn.innerHTML = '<span class="btn-spinner"></span>' + t('preparing');
+    btn.innerHTML = '<span class="btn-spinner"></span>' + t(isFullQuality ? 'preparingPng' : 'preparing');
   }
 
   try {
-    const resized = resizeIfNeeded(canvas, MAX_DIMENSION);
-    const baseName = window._originalName || 'image';
-    await downloadCanvasAsWebp(resized, baseName + '-corrected.webp', 1.5 * 1024 * 1024);
+    if (isFullQuality) {
+      // Full quality: no resize, PNG lossless
+      downloadCanvasPng(canvas, baseName + '-corrected.png');
+    } else {
+      // Web: resize + compressed WebP
+      const resized = resizeIfNeeded(canvas, MAX_DIMENSION);
+      await downloadCanvasAsWebp(resized, baseName + '-corrected.webp', 1.5 * 1024 * 1024);
+    }
   } finally {
     // Restore button
     if (btn) {

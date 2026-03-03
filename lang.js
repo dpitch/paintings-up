@@ -42,7 +42,12 @@ const I18N = {
     stepCorrecting: 'Correction de l\'éclairage…',
     advanced: 'Avancé',
     preparing: 'Préparation…',
+    preparingPng: 'Préparation PNG…',
     processingMode: 'Changement en cours…',
+    qualityWeb: 'Web',
+    'qualityWeb.desc': 'Image réduite, export WebP compressé',
+    qualityFull: 'Pleine qualité',
+    'qualityFull.desc': 'Dimensions originales, export PNG lossless',
   },
   en: {
     title: 'Paintings Up',
@@ -85,7 +90,12 @@ const I18N = {
     stepCorrecting: 'Correcting the lighting…',
     advanced: 'Advanced',
     preparing: 'Preparing…',
+    preparingPng: 'Preparing PNG…',
     processingMode: 'Switching mode…',
+    qualityWeb: 'Web',
+    'qualityWeb.desc': 'Resized image, compressed WebP export',
+    qualityFull: 'Full quality',
+    'qualityFull.desc': 'Original dimensions, lossless PNG export',
   },
 };
 
